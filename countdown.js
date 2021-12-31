@@ -15,6 +15,7 @@ const dateDiffInDays = (d1, d2) => {
  * @param {String[]} args
  * @returns {{
  * targetDate: string
+ * message: string
  * }}
  */
 const parseArgs = args => {
@@ -26,10 +27,10 @@ const parseArgs = args => {
 }
 
 /**
- * 
+ *
  * @param {number} length
- * @param {string} char 
- * 
+ * @param {string} char
+ *
  * @returns {string}
  */
 const getLogSeparator = (length, char = '/') => {
