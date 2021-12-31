@@ -96,6 +96,10 @@ const parseArgs = args => {
  */
 const main = async args => {
   const { csvPath, year } = args
+  if (!year) {
+    console.error('A year is required')
+    process.exit(1)
+  }
   const parser = parse({ delimiter: ',' })
   fs.createReadStream(csvPath).pipe(parser)
 
