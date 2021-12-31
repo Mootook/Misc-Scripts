@@ -1,6 +1,13 @@
 const { parse } = require('csv-parse')
 const fs = require('fs')
 
+/**
+ * @typedef {Object} Book
+ * @property {string} Title
+ * @property {string} DateRead
+ * @property {string} NumberOfPages
+ */
+
 const headerKeys = {
   TITLE: 'Title',
   DATE_READ: 'Date Read',
@@ -21,34 +28,28 @@ const bookToObj = (book, headerList) => {
 }
 
 /**
- * @param {?Error} err
  * @param {Array[]} data
+ * @param {string} year
  * @returns
  */
 const formattedBookListParser = (data, year) => {
   const headers = data[0]
   const dateReadIndex = headers.indexOf(headerKeys.DATE_READ)
   const yearBooksAsObjs = []
-  let totalPages = 0
-  const titleLists = []
   data.forEach((book, index) => {
     const bookIsForYear = book[dateReadIndex].includes(year)
     if (index === 0 || !bookIsForYear) {
       return
     }
     const bookObj = bookToObj(book, headers)
-    const bookPageCount = parseInt(bookObj[headerKeys.NUMBER_OF_PAGES])
-    totalPages += bookPageCount
-
-    titleLists.push(bookObj[headerKeys.TITLE])
-
     yearBooksAsObjs.push(bookObj)
   })
   return yearBooksAsObjs
 }
 
 /**
- * @param {*} books
+ * @param {Book[]} books
+ * @param {string} year
  */
 const printTotalBookInfo = (books, year) => {
   const titleList = []
