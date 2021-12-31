@@ -1,5 +1,4 @@
-const { parse } = require('csv-parse')
-const fs = require('fs')
+const { getRecords, parseArgs, formatRecord } = require('./utils')
 
 /**
  * @typedef {Object} Book
@@ -12,19 +11,6 @@ const headerKeys = {
   TITLE: 'Title',
   DATE_READ: 'Date Read',
   NUMBER_OF_PAGES: 'Number of Pages'
-}
-
-/**
- * @param {String[]} book
- * @param {String[]} headerList
- * @returns {Book}
- */
-const bookToObj = (book, headerList) => {
-  const retVal = {}
-  book.forEach((val, index) => {
-    retVal[headerList[index]] = val
-  })
-  return retVal
 }
 
 /**
@@ -41,7 +27,7 @@ const formattedBookListParser = (data, year) => {
     if (index === 0 || !bookIsForYear) {
       return
     }
-    const bookObj = bookToObj(book, headers)
+    const bookObj = formatRecord(book, headers)
     yearBooksAsObjs.push(bookObj)
   })
   return yearBooksAsObjs
@@ -74,40 +60,18 @@ const printTotalBookInfo = (books, year) => {
 }
 
 /**
- *
- * @param {String[]} args
- * @returns {{
- *  csvPath: string,
- *  year: string
- * }}
- */
-const parseArgs = args => {
-  const [csvPath, year] = args.filter((_, i) => i > 1)
-  return {
-    csvPath,
-    year
-  }
-}
-
-/**
  * @param {{
  *  csvPath: string,
  *  year: string
  * }} args
  */
 const main = async args => {
-  const { csvPath, year } = args
+  const [csvPath, year] = args
   if (!year) {
     console.error('A year is required')
     process.exit(1)
   }
-  const parser = parse({ delimiter: ',' })
-  fs.createReadStream(csvPath).pipe(parser)
-
-  const records = []
-  for await (const record of parser) {
-    records.push(record)
-  }
+  const records = await getRecords(csvPath)
   const books = formattedBookListParser(records, year)
   printTotalBookInfo(books, year)
 
