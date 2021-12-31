@@ -1,0 +1,23 @@
+{
+  "name": "scripts",
+  "version": "1.0.0",
+  "description": "Misc. scripts for misc things",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mootook/Misc-Scripts.git"
+  },
+  "author": "alexanderkmutuc@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mootook/Misc-Scripts/issues"
+  },
+  "homepage": "https://github.com/Mootook/Misc-Scripts#readme",
+  "dependencies": {
+    "csv-parse": "^5.0.4"
+  }
+}
