@@ -27,9 +27,92 @@ function addMeleeTagToAllFiles(requestedPath) {
         digForMD(path.join(p, c));
       }
     } else if (path.extname(p) === ".md" && !p.includes("VOD Library")) {
-      findAndReplaceTagsInFile(p);
+      ensureTagsInFrontMatter(p);
     }
   }
+
+  function ensureTagsInFrontMatter(fullFilePath) {
+    // console.log("<<<", fullFilePath, ">>>");
+    const pattern = /\B(\#[a-zA-Z/]+\b)/g;
+    let content = fs.readFileSync(fullFilePath).toString();
+    let tags = content.match(pattern) ?? [];
+    const frontMatterPattern = /---\n.*?\n---/s;
+    // console.log("Tags", tags);
+    const [fm] = content.match(frontMatterPattern) ?? [];
+    if (fm) {
+      if (fm.includes("tags:")) {
+        tags = content
+          .substring(fm.indexOf("tags:") + 7, content.indexOf("---", 1))
+          .split("\n")
+          .filter((t) => t != "")
+          .map((t) => {
+            const pruned = t.replace("-", "").trim();
+            let r = pruned;
+            if (!r.includes("melee")) {
+              r = "melee/" + pruned;
+            }
+            return r;
+          });
+        if (!tags.includes("melee")) {
+          tags.unshift("melee");
+        }
+
+        const newFm = fm.replace(
+          fm.substring(fm.indexOf("tags:"), fm.indexOf("---", 1)),
+          "tags:\n" + tags.map((t) => "  - " + t).join("\n") + "\n"
+        );
+
+        if (fm.includes("Captain Falcon vs. Falco")) {
+          console.log("Before:");
+          console.log(fm);
+          console.log("\nAfter:");
+        }
+        content = content.replace(fm, newFm);
+        content = content.replace(new RegExp("#melee", "g"), "");
+        if (fm.includes("Captain Falcon vs. Falco")) {
+          console.log(content);
+        }
+      } else {
+        // console.log("NO tags keys\n");
+        const indexOfEndOfFM = fm.indexOf("---", 1);
+        // console.log("Before:");
+        // console.log(fm);
+        tags = tags.map((t) => t.replace("#", "")).filter((t) => t !== "melee");
+        tags.unshift("melee");
+        tags = tags.map((t) => "  - " + t).join("\n") + "\n";
+        const newFm =
+          fm.substring(0, indexOfEndOfFM) +
+          "tags:\n" +
+          tags +
+          fm.substring(indexOfEndOfFM);
+        content = content.replace(fm, newFm);
+        content = content.replace("#melee", "");
+        // console.log("After:");
+        // console.log(newFm);
+      }
+    } else {
+      // console.log("Before:");
+      // console.log(content);
+      const newFm = "---\n" + "tags:\n" + "  - melee\n" + "---\n";
+      content = newFm + content;
+      content = content.replace("#melee", "");
+      // console.log("After:");
+      // console.log(content);
+    }
+    writeNewContent(content, fullFilePath);
+  }
+
+  function writeNewContent(content, fullPath) {
+    const newPath = fullPath.replace(basePathMac, output);
+    const newDir = path.dirname(newPath);
+    if (!fs.existsSync(newDir)) {
+      fs.mkdirSync(newDir, { recursive: true });
+    }
+    console.log("Writing to ", newPath);
+    console.log(content);
+    fs.writeFileSync(newPath, content, { encoding: "utf-8" });
+  }
+
   function findAndReplaceTagsInFile(fullFilePath) {
     // Gets every #word
     const tag = "#melee";
@@ -51,14 +134,7 @@ function addMeleeTagToAllFiles(requestedPath) {
     }
     console.log("<<<", fullFilePath, ">>>");
     console.log(content);
-    const newPath = fullFilePath.replace(basePathMac, output);
-    console.log("New File Path: " + newPath);
-    const newDir = path.dirname(newPath);
-    console.log(newDir);
-    if (!fs.existsSync(newDir)) {
-      fs.mkdirSync(newDir, { recursive: true });
-    }
-    fs.writeFileSync(newPath, content, { encoding: "utf-8" });
+    writeNewContent(content, fullFilePath);
   }
   digForMD(requestedPath);
 }
