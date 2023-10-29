@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/Mootook/Misc-Scripts#readme",
   "dependencies": {
-    "csv-parse": "^5.0.4"
+    "csv-parse": "^5.0.4",
+    "csv-writer": "^1.6.0"
   }
 }
